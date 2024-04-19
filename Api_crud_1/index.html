@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title></title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <table id="main" border="0" cellspacing="0">
+    <tr>
+      <td id="header">
+        <h1>REST API CRUD</h1>
+
+        <div id="search-bar">
+          <label>Search :</label>
+          <input type="text" id="search" autocomplete="off">
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td id="table-form">
+        <form id="addForm">
+          Name : <input type="text" name="sname" id="sname">
+          Age : <input type="text" name="sage" id="sage">
+          City : <input type="text" name="scity" id="scity">
+          <input type="submit" id="save-button" value="Save">
+        </form>
+      </td>
+    </tr>
+    <tr>
+      <td id="table-data">
+        <table width="100%" cellpadding="10px">
+          <tr>
+            <th width="40px">Id</th>
+            <th>Name</th>
+            <th width="50px">Age</th>
+            <th width="150px">City</th>
+            <th width="60px">Edit</th>
+            <th width="70px">Delete</th>
+          </tr>
+          <tbody id="load-table"></tbody>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+    integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- <script type="text/javascript" src="js/jquery.js"></script> -->
+  <script type="text/javascript">
+    $(document).ready(function () {
+      //Fetch All Records
+
+
+      // Function for form Data to JSON Object
+      function jsonData(xyz) {
+        console.log(xyz)
+        var arr = $(xyz).serializeArray();
+        console.log(arr)
+
+        var obj = {};
+
+
+
+        for (var a = 0; a < arr.length; a++) {
+          if (arr[a].value == "") {
+            return false;
+          }
+          obj[arr[a].name] = arr[a].value;
+        }
+
+        console.log(obj)
+
+        var json_string = JSON.stringify(obj);
+
+        return json_string;
+
+      }
+
+      //Insert New Record
+      $("#save-button").on("click", function (e) {
+        e.preventDefault();
+        //  console.log(e)
+
+        var x = jsonData("#addForm");
+        console.log(x);//false
+
+        if (x == false) {
+          message("All Fields are required.", false)
+        } else {
+          $.ajax({
+
+            url: "http://localhost/laravel/Api_CRUD_1/insert.php",
+
+            type: "POST",
+            data: x,
+            success: function (data) {
+
+              // console.log(data)
+              // message(data.message, data.status);
+
+              if (data.status == true) {
+                loadTable();
+                $('#addForm').trigger("reset");
+              }
+            }
+          });
+        }
+      });
+
+    });
+
+    function loadTable() {
+      $("#load-table").html("");
+      $.ajax({
+        url: "http://localhost/laravel/Api_CRUD_1/fetch.php",
+
+        type: "GET",
+        success: function (data) {
+          console.log(data);
+          if (data.status == false) {
+            $("#load-table").append("<tr><td colspan='6'><h2>" + data.message + "</h2></td></tr>");
+          } else {
+            $.each(data, function (key, value) {
+              $("#load-table").append("<tr>" +
+                "<td>" + value.id + "</td>" +
+                "<td>" + value.student_name + "</td>" +
+                "<td>" + value.age + "</td>" +
+                "<td>" + value.city + "</td>" +
+                "<td><button class='edit-btn' data-eid='" + value.id + "'>Edit</button></td>" +
+                "<td><button class='delete-btn' data-id='" + value.id + "'>Delete</button></td>" +
+                "</tr>");
+            });
+          }
+        }
+      });
+    }
+    loadTable();
+  </script>
+</body>
+
+</html>
